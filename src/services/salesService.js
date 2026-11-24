@@ -12,6 +12,7 @@ function queryMockPosts({
   maxPrice = '',
   dateRange = 'all',
   condition = 'all',
+  source = 'all',
   sort = 'newest',
   page = 1,
   pageSize = 20,
@@ -52,6 +53,10 @@ function queryMockPosts({
 
   if (condition && condition !== 'all') {
     filtered = filtered.filter(p => p.condition?.toLowerCase() === condition.toLowerCase())
+  }
+
+  if (source && source !== 'all') {
+    filtered = filtered.filter(p => p.source_id === source || p.group_name === source || p.source_name === source)
   }
 
   if (dateRange && dateRange !== 'all') {
@@ -119,22 +124,52 @@ export const salesService = {
   },
 
   /**
-   * Fetch sources from Supabase or fallback to mock
+   * Fetch sources from Supabase or fallback to mock (combines sources table + distinct group_names)
    */
   getSources: async () => {
     if (!isSupabaseConfigured() || !supabase) {
-      return { data: MOCK_SOURCES, error: null }
+      const list = [...MOCK_SOURCES]
+      const existingNames = new Set(list.map(s => s.name?.toLowerCase()))
+      MOCK_POSTS.forEach(p => {
+        if (p.group_name && !existingNames.has(p.group_name.toLowerCase())) {
+          existingNames.add(p.group_name.toLowerCase())
+          list.push({ id: p.group_name, name: p.group_name, platform: p.platform || 'facebook' })
+        }
+      })
+      return { data: list, error: null }
     }
 
     try {
-      const { data, error } = await supabase
+      // 1. Fetch from sources table
+      const { data: sourcesData } = await supabase
         .from('sources')
         .select('id, name, platform, is_active')
         .eq('is_active', true)
         .order('name', { ascending: true })
 
-      if (error) throw error
-      return { data: data || [], error: null }
+      const combined = sourcesData ? [...sourcesData] : []
+      const existingNames = new Set(combined.map(s => s.name?.toLowerCase()))
+
+      // 2. Also fetch distinct group_names from sales_posts
+      const { data: postsData } = await supabase
+        .from('sales_posts')
+        .select('group_name')
+        .not('group_name', 'is', null)
+
+      if (postsData) {
+        postsData.forEach(p => {
+          if (p.group_name && !existingNames.has(p.group_name.toLowerCase())) {
+            existingNames.add(p.group_name.toLowerCase())
+            combined.push({
+              id: p.group_name,
+              name: p.group_name,
+              platform: 'facebook'
+            })
+          }
+        })
+      }
+
+      return { data: combined, error: null }
     } catch (err) {
       console.error('Error fetching sources from Supabase:', err)
       return { data: MOCK_SOURCES, error: err.message }
@@ -153,6 +188,7 @@ export const salesService = {
       maxPrice = '',
       dateRange = 'all',
       condition = 'all',
+      source = 'all',
       sort = 'newest',
       page = 1,
       pageSize = 20,
@@ -222,6 +258,16 @@ export const salesService = {
       // Condition filter
       if (condition && condition !== 'all') {
         query = query.eq('condition', condition)
+      }
+
+      // Source / Group filter
+      if (source && source !== 'all') {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(source)
+        if (isUuid) {
+          query = query.eq('source_id', source)
+        } else {
+          query = query.eq('group_name', source)
+        }
       }
 
       // Price filters

@@ -14,6 +14,7 @@ export function useSalesPosts() {
   const [maxPrice, setMaxPrice] = useState('')
   const [dateRange, setDateRange] = useState('all')
   const [condition, setCondition] = useState('all')
+  const [source, setSource] = useState('all')
   const [sort, setSort] = useState('newest')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -23,6 +24,7 @@ export function useSalesPosts() {
   const [posts, setPosts] = useState([])
   const [totalCount, setTotalCount] = useState(0)
   const [categories, setCategories] = useState([])
+  const [sources, setSources] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -36,7 +38,7 @@ export function useSalesPosts() {
   }, [search])
 
   // Reset page to 1 when any filter changes
-  const prevFiltersRef = useRef({ platform, category, minPrice, maxPrice, dateRange, condition, sort, favoritesOnly })
+  const prevFiltersRef = useRef({ platform, category, minPrice, maxPrice, dateRange, condition, source, sort, favoritesOnly })
   useEffect(() => {
     const prev = prevFiltersRef.current
     if (
@@ -46,20 +48,26 @@ export function useSalesPosts() {
       prev.maxPrice !== maxPrice ||
       prev.dateRange !== dateRange ||
       prev.condition !== condition ||
+      prev.source !== source ||
       prev.sort !== sort ||
       prev.favoritesOnly !== favoritesOnly
     ) {
       setPage(1)
-      prevFiltersRef.current = { platform, category, minPrice, maxPrice, dateRange, condition, sort, favoritesOnly }
+      prevFiltersRef.current = { platform, category, minPrice, maxPrice, dateRange, condition, source, sort, favoritesOnly }
     }
-  }, [platform, category, minPrice, maxPrice, dateRange, condition, sort, favoritesOnly])
+  }, [platform, category, minPrice, maxPrice, dateRange, condition, source, sort, favoritesOnly])
 
-  // Load categories once
+  // Load categories and sources once
   useEffect(() => {
     let isMounted = true
     salesService.getCategories().then(res => {
       if (isMounted && res.data) {
         setCategories(res.data)
+      }
+    })
+    salesService.getSources().then(res => {
+      if (isMounted && res.data) {
+        setSources(res.data)
       }
     })
     return () => { isMounted = false }
@@ -78,6 +86,7 @@ export function useSalesPosts() {
         maxPrice,
         dateRange,
         condition,
+        source,
         sort,
         page,
         pageSize,
@@ -96,7 +105,7 @@ export function useSalesPosts() {
     } finally {
       setLoading(false)
     }
-  }, [debouncedSearch, platform, category, minPrice, maxPrice, dateRange, condition, sort, page, pageSize, favoritesOnly, favoriteIds])
+  }, [debouncedSearch, platform, category, minPrice, maxPrice, dateRange, condition, source, sort, page, pageSize, favoritesOnly, favoriteIds])
 
   useEffect(() => {
     fetchPosts()
@@ -111,6 +120,7 @@ export function useSalesPosts() {
     setMaxPrice('')
     setDateRange('all')
     setCondition('all')
+    setSource('all')
     setSort('newest')
     setFavoritesOnly(false)
     setPage(1)
@@ -136,6 +146,7 @@ export function useSalesPosts() {
     posts,
     totalCount,
     categories,
+    sources,
     loading,
     error,
     refresh: fetchPosts,
@@ -147,6 +158,8 @@ export function useSalesPosts() {
     setPlatform,
     category,
     setCategory,
+    source,
+    setSource,
     minPrice,
     setMinPrice,
     maxPrice,

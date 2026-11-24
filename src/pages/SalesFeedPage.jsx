@@ -22,6 +22,7 @@ export function SalesFeedPage() {
     posts,
     totalCount,
     categories,
+    sources,
     loading,
     error,
     refresh,
@@ -32,6 +33,8 @@ export function SalesFeedPage() {
     setPlatform,
     category,
     setCategory,
+    source,
+    setSource,
     minPrice,
     setMinPrice,
     maxPrice,
@@ -80,14 +83,15 @@ export function SalesFeedPage() {
         category={category}
         setCategory={setCategory}
         categories={categories}
+        source={source}
+        setSource={setSource}
+        sources={sources}
         minPrice={minPrice}
         setMinPrice={setMinPrice}
         maxPrice={maxPrice}
         setMaxPrice={setMaxPrice}
         dateRange={dateRange}
         setDateRange={setDateRange}
-        condition={condition}
-        setCondition={setCondition}
         sort={sort}
         setSort={setSort}
         favoritesOnly={favoritesOnly}

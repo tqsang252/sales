@@ -8,14 +8,15 @@ export function SalesFilters({
   category,
   setCategory,
   categories = [],
+  source,
+  setSource,
+  sources = [],
   minPrice,
   setMinPrice,
   maxPrice,
   setMaxPrice,
   dateRange,
   setDateRange,
-  condition,
-  setCondition,
   sort,
   setSort,
   favoritesOnly,
@@ -27,10 +28,10 @@ export function SalesFilters({
   const hasActiveFilters =
     platform !== 'all' ||
     category !== 'all' ||
+    source !== 'all' ||
     minPrice !== '' ||
     maxPrice !== '' ||
     dateRange !== 'all' ||
-    condition !== 'all' ||
     sort !== 'newest' ||
     favoritesOnly
 
@@ -155,17 +156,18 @@ export function SalesFilters({
             </select>
           </div>
 
-          {/* Condition Filter */}
+          {/* Source / Group Filter */}
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Condition</label>
+            <label className="block text-xs font-medium text-slate-600 mb-1">Source / Group</label>
             <select
-              value={condition}
-              onChange={(e) => setCondition(e.target.value)}
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
               className="w-full text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
             >
-              {CONDITIONS.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
+              <option value="all">All Sources</option>
+              {sources.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
                 </option>
               ))}
             </select>
