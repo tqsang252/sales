@@ -12,6 +12,7 @@ export function SalesListRow({ post, isFav, onToggleFav, onDelete, onSelect }) {
     id,
     platform,
     author_name,
+    group_name,
     product_name,
     content,
     image_url,
@@ -77,6 +78,7 @@ export function SalesListRow({ post, isFav, onToggleFav, onDelete, onSelect }) {
             </p>
             <p className="text-xs text-slate-400 truncate mt-0.5">
               by <span className="text-slate-700 font-medium">{author_name || 'Anonymous'}</span>
+              {group_name ? ` • in ${group_name}` : ''}
               {category_name ? ` • ${category_name}` : ''}
             </p>
           </div>

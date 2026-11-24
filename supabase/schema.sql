@@ -25,12 +25,14 @@ CREATE TABLE IF NOT EXISTS categories (
 );
 
 -- 4. CREATE TABLE: sales_posts
+-- (If you already created this table earlier, simply run: ALTER TABLE sales_posts ADD COLUMN IF NOT EXISTS group_name TEXT;)
 CREATE TABLE IF NOT EXISTS sales_posts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     source_id UUID REFERENCES sources(id) ON DELETE SET NULL,
     external_post_id TEXT,
     original_url TEXT NOT NULL,
     author_name TEXT NOT NULL,
+    group_name TEXT,
     content TEXT NOT NULL,
     image_url TEXT,
     product_name TEXT,

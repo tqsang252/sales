@@ -25,6 +25,7 @@ export const MOCK_POSTS = [
     external_post_id: 'fb_101',
     original_url: 'https://facebook.com/groups/dealhunters/posts/999',
     author_name: 'Amy Rose',
+    group_name: 'Target & Lowes Deals USA',
     product_name: null, // Test community query with no product name
     content: 'What time do people line up on Friday? Specifically Lowes and Target. Looking to grab the doorbuster appliance deals early!',
     image_url: null, // No image
@@ -43,6 +44,7 @@ export const MOCK_POSTS = [
     external_post_id: 'fb_101',
     original_url: 'https://facebook.com/marketplace/item/101',
     author_name: 'Alex Johnson',
+    group_name: 'Chợ Mua Bán Đồ Điện Tử Houston',
     product_name: 'Apple MacBook Pro M2 14" (16GB/512GB)',
     content: 'Selling my gently used MacBook Pro M2 Space Gray. Battery health at 98%. Comes with original 67W charger and box. No scratches or dents. Local cash or Venmo only.',
     image_url: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
@@ -79,6 +81,7 @@ export const MOCK_POSTS = [
     external_post_id: 'fb_103',
     original_url: 'https://facebook.com/marketplace/item/103',
     author_name: 'Marcus Vance',
+    group_name: 'Hội Săn Deal Nhà Cửa & Decor',
     product_name: 'Solid Oak Mid-Century Coffee Table',
     content: 'Authentic 1960s restored oak coffee table with tempered glass top inset. Beautiful wood grain and tapered peg legs. Dimensions: 48x24x18 inches. Moving out sale.',
     image_url: 'https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?auto=format&fit=crop&w=800&q=80',

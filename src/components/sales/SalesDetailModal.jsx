@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { X, ExternalLink, Bookmark, Trash2, MapPin, Tag, Calendar, MessageSquareText } from 'lucide-react'
+import { X, ExternalLink, Bookmark, Trash2, MapPin, Tag, Calendar, MessageSquareText, Users } from 'lucide-react'
 import { PlatformBadge } from '../common/PlatformBadge'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatStandardDate, formatRelativeTime } from '../../utils/formatDate'
@@ -29,6 +29,7 @@ export function SalesDetailModal({ post, isOpen, onClose, isFav, onToggleFav, on
     id,
     platform,
     author_name,
+    group_name,
     product_name,
     content,
     image_url,
@@ -85,10 +86,19 @@ export function SalesDetailModal({ post, isOpen, onClose, isFav, onToggleFav, on
             <div className="flex items-center gap-2.5 min-w-0">
               <PlatformBadge platform={platform} />
               <div className="min-w-0">
-                <h3 className="text-sm font-bold text-slate-900 truncate">
-                  {author_name || 'Anonymous User'}
-                </h3>
-                <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <h3 className="text-sm font-bold text-slate-900 truncate">
+                    {author_name || 'Anonymous User'}
+                  </h3>
+                  {group_name && (
+                    <span className="text-xs text-slate-500 font-medium truncate flex items-center gap-1">
+                      <span className="text-slate-300">•</span>
+                      <Users className="w-3 h-3 text-blue-500 shrink-0" />
+                      <span className="text-slate-700 font-semibold">{group_name}</span>
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                   <Calendar className="w-3 h-3" />
                   <span>{formatStandardDate(published_at)}</span>
                   <span>•</span>

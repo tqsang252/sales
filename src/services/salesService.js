@@ -175,6 +175,7 @@ export const salesService = {
           external_post_id,
           original_url,
           author_name,
+          group_name,
           content,
           image_url,
           product_name,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Bookmark, ExternalLink, MapPin, Tag, MessageSquareText, Trash2, Eye } from 'lucide-react'
+import { Bookmark, ExternalLink, MapPin, Tag, MessageSquareText, Trash2, Eye, Users } from 'lucide-react'
 import { PlatformBadge } from '../common/PlatformBadge'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatRelativeTime } from '../../utils/formatDate'
@@ -12,6 +12,7 @@ export function SalesCard({ post, isFav, onToggleFav, onDelete, onSelect }) {
     id,
     platform,
     author_name,
+    group_name,
     product_name,
     content,
     image_url,
@@ -57,49 +58,62 @@ export function SalesCard({ post, isFav, onToggleFav, onDelete, onSelect }) {
       className="bg-white rounded-xl border border-slate-200/90 shadow-xs hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group cursor-pointer"
     >
       <div>
-        {/* Card Header: Platform, Author, Time, Fav & Trash */}
-        <div className="p-3.5 pb-2.5 flex items-center justify-between border-b border-slate-100/80 gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <PlatformBadge platform={platform} />
-            <span className="text-xs font-semibold text-slate-800 truncate" title={author_name}>
-              {author_name || 'Anonymous User'}
-            </span>
+        {/* Card Header: Platform, Author, Group, Time, Fav & Trash */}
+        <div className="p-3.5 pb-2.5 border-b border-slate-100/80">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <PlatformBadge platform={platform} />
+              <span className="text-xs font-semibold text-slate-800 truncate" title={author_name}>
+                {author_name || 'Anonymous User'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1 shrink-0">
+              <span className="text-[11px] text-slate-400 mr-1">
+                {formatRelativeTime(published_at)}
+              </span>
+
+              {/* Favorite Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onToggleFav(id)
+                }}
+                className={`p-1.5 rounded-lg transition ${
+                  isFav
+                    ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
+                    : 'text-slate-300 hover:text-slate-600 hover:bg-slate-50'
+                }`}
+                title={isFav ? 'Remove from favorites' : 'Save to favorites'}
+              >
+                <Bookmark className={`w-3.5 h-3.5 ${isFav ? 'fill-amber-500' : ''}`} />
+              </button>
+
+              {/* Trash / Delete Button */}
+              <button
+                onClick={handleDelete}
+                className={`p-1.5 rounded-lg transition ${
+                  confirmDelete
+                    ? 'text-white bg-rose-600 shadow-xs'
+                    : 'text-slate-300 hover:text-rose-600 hover:bg-rose-50'
+                }`}
+                title={confirmDelete ? 'Click again to confirm delete' : 'Delete post'}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="text-[11px] text-slate-400 mr-1">
-              {formatRelativeTime(published_at)}
-            </span>
-
-            {/* Favorite Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onToggleFav(id)
-              }}
-              className={`p-1.5 rounded-lg transition ${
-                isFav
-                  ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
-                  : 'text-slate-300 hover:text-slate-600 hover:bg-slate-50'
-              }`}
-              title={isFav ? 'Remove from favorites' : 'Save to favorites'}
-            >
-              <Bookmark className={`w-3.5 h-3.5 ${isFav ? 'fill-amber-500' : ''}`} />
-            </button>
-
-            {/* Trash / Delete Button */}
-            <button
-              onClick={handleDelete}
-              className={`p-1.5 rounded-lg transition ${
-                confirmDelete
-                  ? 'text-white bg-rose-600 shadow-xs'
-                  : 'text-slate-300 hover:text-rose-600 hover:bg-rose-50'
-              }`}
-              title={confirmDelete ? 'Click again to confirm delete' : 'Delete post'}
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          {/* Row 2: Group Name directly below Platform/Author */}
+          {group_name && (
+            <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-500 font-medium truncate" title={`Group: ${group_name}`}>
+              <Users className="w-3 h-3 text-blue-500 shrink-0" />
+              <span className="text-slate-400">in</span>
+              <span className="text-slate-700 font-medium truncate hover:text-blue-600 transition-colors">
+                {group_name}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* 1. NẾU CÓ ẢNH: Hiển thị ảnh (nếu ảnh lỗi -> tự ẩn hoàn toàn để không để ô trống) */}
