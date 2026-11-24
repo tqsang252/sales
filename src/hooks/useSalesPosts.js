@@ -116,6 +116,22 @@ export function useSalesPosts() {
     setPage(1)
   }, [])
 
+  const deletePost = useCallback(async (id) => {
+    // Optimistically update UI
+    setPosts(prev => prev.filter(p => p.id !== id))
+    setTotalCount(c => Math.max(0, c - 1))
+
+    // Call service
+    const res = await salesService.deleteSalesPost(id)
+    if (res.error) {
+      console.error('Failed to delete post:', res.error)
+      // Refresh on failure
+      fetchPosts()
+      return false
+    }
+    return true
+  }, [fetchPosts])
+
   return {
     posts,
     totalCount,
@@ -123,6 +139,7 @@ export function useSalesPosts() {
     loading,
     error,
     refresh: fetchPosts,
+    deletePost,
     // Filters and Setters
     search,
     setSearch,

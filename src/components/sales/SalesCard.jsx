@@ -1,10 +1,13 @@
-import React from 'react'
-import { Bookmark, ExternalLink, MapPin, Tag, MessageSquareText } from 'lucide-react'
+import React, { useState } from 'react'
+import { Bookmark, ExternalLink, MapPin, Tag, MessageSquareText, Trash2, Eye } from 'lucide-react'
 import { PlatformBadge } from '../common/PlatformBadge'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatRelativeTime } from '../../utils/formatDate'
 
-export function SalesCard({ post, isFav, onToggleFav }) {
+export function SalesCard({ post, isFav, onToggleFav, onDelete, onSelect }) {
+  const [imgFailed, setImgFailed] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
   const {
     id,
     platform,
@@ -21,7 +24,7 @@ export function SalesCard({ post, isFav, onToggleFav }) {
     original_url
   } = post
 
-  const hasImage = Boolean(image_url)
+  const hasImage = Boolean(image_url) && !imgFailed
   const hasPrice = price !== null && price !== undefined && !isNaN(Number(price))
 
   const conditionLabels = {
@@ -30,10 +33,24 @@ export function SalesCard({ post, isFav, onToggleFav }) {
     refurbished: 'Refurbished'
   }
 
+  const handleDelete = (e) => {
+    e.stopPropagation()
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      // Auto-reset confirm state after 3 seconds if not clicked again
+      setTimeout(() => setConfirmDelete(false), 3000)
+      return
+    }
+    onDelete(id)
+  }
+
   return (
-    <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group">
+    <div
+      onClick={() => onSelect && onSelect(post)}
+      className="bg-white rounded-xl border border-slate-200/90 shadow-xs hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group cursor-pointer"
+    >
       <div>
-        {/* Card Header: Platform, Author, Time & Fav */}
+        {/* Card Header: Platform, Author, Time, Fav & Trash */}
         <div className="p-3.5 pb-2.5 flex items-center justify-between border-b border-slate-100/80 gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <PlatformBadge platform={platform} />
@@ -42,12 +59,17 @@ export function SalesCard({ post, isFav, onToggleFav }) {
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[11px] text-slate-400">
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-[11px] text-slate-400 mr-1">
               {formatRelativeTime(published_at)}
             </span>
+
+            {/* Favorite Button */}
             <button
-              onClick={() => onToggleFav(id)}
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleFav(id)
+              }}
               className={`p-1.5 rounded-lg transition ${
                 isFav
                   ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
@@ -55,12 +77,25 @@ export function SalesCard({ post, isFav, onToggleFav }) {
               }`}
               title={isFav ? 'Remove from favorites' : 'Save to favorites'}
             >
-              <Bookmark className={`w-4 h-4 ${isFav ? 'fill-amber-500' : ''}`} />
+              <Bookmark className={`w-3.5 h-3.5 ${isFav ? 'fill-amber-500' : ''}`} />
+            </button>
+
+            {/* Trash / Delete Button */}
+            <button
+              onClick={handleDelete}
+              className={`p-1.5 rounded-lg transition ${
+                confirmDelete
+                  ? 'text-white bg-rose-600 shadow-xs'
+                  : 'text-slate-300 hover:text-rose-600 hover:bg-rose-50'
+              }`}
+              title={confirmDelete ? 'Click again to confirm delete' : 'Delete post'}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* 1. NẾU CÓ ẢNH: Hiển thị banner ảnh sản phẩm */}
+        {/* 1. NẾU CÓ ẢNH: Hiển thị ảnh (nếu ảnh lỗi -> tự ẩn hoàn toàn để không để ô trống) */}
         {hasImage && (
           <div className="relative h-44 w-full bg-slate-100 overflow-hidden border-b border-slate-100">
             <img
@@ -68,9 +103,7 @@ export function SalesCard({ post, isFav, onToggleFav }) {
               alt={product_name || 'Listing'}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
-              onError={(e) => {
-                e.target.style.display = 'none'
-              }}
+              onError={() => setImgFailed(true)}
             />
             {condition && condition !== 'unknown' && (
               <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-white/90 backdrop-blur-sm text-slate-800 shadow-xs border border-slate-200/80 uppercase tracking-wider">
@@ -110,12 +143,11 @@ export function SalesCard({ post, isFav, onToggleFav }) {
             </h4>
           )}
 
-          {/* Post Content: Tự thích ứng độ dài */}
-          {/* Nếu không có ảnh, cho phép hiển thị nội dung dài hơn (4-5 dòng) với cỡ chữ dễ đọc như bài viết mạng xã hội */}
+          {/* Post Content preview: Tự thích ứng độ dài */}
           <p className={`text-slate-700 leading-relaxed mb-3 ${
             hasImage
               ? 'text-xs line-clamp-2 text-slate-500'
-              : 'text-sm font-normal line-clamp-4 bg-slate-50/80 p-3 rounded-lg border border-slate-100 text-slate-800 italic'
+              : 'text-sm font-normal line-clamp-3 bg-slate-50/80 p-3 rounded-lg border border-slate-100 text-slate-800 italic'
           }`}>
             "{content || 'No content available.'}"
           </p>
@@ -137,10 +169,11 @@ export function SalesCard({ post, isFav, onToggleFav }) {
         </div>
       </div>
 
-      {/* Card Footer */}
+      {/* Card Footer: View Details & View Post */}
       <div className="p-3 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
-        <span className="text-[11px] text-slate-400">
-          {hasImage ? 'Product Listing' : 'Social Post'}
+        <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 group-hover:text-blue-600 transition">
+          <Eye className="w-3.5 h-3.5" />
+          <span>Click to read</span>
         </span>
 
         {original_url ? (
@@ -148,10 +181,12 @@ export function SalesCard({ post, isFav, onToggleFav }) {
             href={original_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 active:bg-blue-100 transition shadow-xs"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 active:bg-blue-100 transition shadow-xs"
+            title="Open original post in new tab"
           >
             <span>View Post</span>
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-3 h-3" />
           </a>
         ) : (
           <span className="text-xs text-slate-400 italic">No link</span>

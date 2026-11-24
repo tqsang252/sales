@@ -282,5 +282,32 @@ export const salesService = {
       const mockResult = queryMockPosts(params)
       return { ...mockResult, error: err.message }
     }
+  },
+
+  /**
+   * Delete a sales post by ID
+   */
+  deleteSalesPost: async (id) => {
+    if (!isSupabaseConfigured() || !supabase) {
+      // In mock mode, delete from MOCK_POSTS in memory
+      const index = MOCK_POSTS.findIndex(p => p.id === id)
+      if (index !== -1) {
+        MOCK_POSTS.splice(index, 1)
+      }
+      return { success: true, error: null }
+    }
+
+    try {
+      const { error } = await supabase
+        .from('sales_posts')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      return { success: true, error: null }
+    } catch (err) {
+      console.error('Error deleting post from Supabase:', err)
+      return { success: false, error: err.message }
+    }
   }
 }

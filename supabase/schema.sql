@@ -57,7 +57,7 @@ ALTER TABLE sources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sales_posts ENABLE ROW LEVEL SECURITY;
 
--- Allow anonymous read access for public data
+-- Allow anonymous read access
 CREATE POLICY "Allow public read access on sources" ON sources
     FOR SELECT USING (true);
 
@@ -66,6 +66,14 @@ CREATE POLICY "Allow public read access on categories" ON categories
 
 CREATE POLICY "Allow public read access on sales_posts" ON sales_posts
     FOR SELECT USING (true);
+
+-- Allow deletion of sales posts
+CREATE POLICY "Allow public delete access on sales_posts" ON sales_posts
+    FOR DELETE USING (true);
+
+-- Allow insert/update if needed
+CREATE POLICY "Allow public insert access on sales_posts" ON sales_posts
+    FOR INSERT WITH CHECK (true);
 
 -- 7. SEED DATA (Demo Sources, Categories, and Posts)
 DO $$

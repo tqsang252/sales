@@ -6,6 +6,7 @@ import { ViewToggle } from '../components/sales/ViewToggle'
 import { SalesCard } from '../components/sales/SalesCard'
 import { SalesListRow } from '../components/sales/SalesListRow'
 import { SalesPagination } from '../components/sales/SalesPagination'
+import { SalesDetailModal } from '../components/sales/SalesDetailModal'
 import { LoadingGrid, LoadingTable } from '../components/common/LoadingState'
 import { EmptyState } from '../components/common/EmptyState'
 import { ErrorState } from '../components/common/ErrorState'
@@ -14,6 +15,7 @@ import { useFavorites } from '../hooks/useFavorites'
 
 export function SalesFeedPage() {
   const [viewMode, setViewMode] = useState('grid') // 'grid' | 'list'
+  const [selectedPost, setSelectedPost] = useState(null)
   const { isFavorite, toggleFavorite } = useFavorites()
 
   const {
@@ -23,6 +25,7 @@ export function SalesFeedPage() {
     loading,
     error,
     refresh,
+    deletePost,
     search,
     setSearch,
     platform,
@@ -121,6 +124,8 @@ export function SalesFeedPage() {
               post={post}
               isFav={isFavorite(post.id)}
               onToggleFav={toggleFavorite}
+              onDelete={deletePost}
+              onSelect={setSelectedPost}
             />
           ))}
         </div>
@@ -136,7 +141,7 @@ export function SalesFeedPage() {
                 <th className="py-3 px-4">Location</th>
                 <th className="py-3 px-4">Condition</th>
                 <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-2 text-center">Fav</th>
+                <th className="py-3 px-2 text-center">Actions</th>
                 <th className="py-3 px-4 text-right">Original</th>
               </tr>
             </thead>
@@ -147,6 +152,8 @@ export function SalesFeedPage() {
                   post={post}
                   isFav={isFavorite(post.id)}
                   onToggleFav={toggleFavorite}
+                  onDelete={deletePost}
+                  onSelect={setSelectedPost}
                 />
               ))}
             </tbody>
@@ -167,6 +174,16 @@ export function SalesFeedPage() {
           }}
         />
       )}
+
+      {/* Full Detail Modal Popup */}
+      <SalesDetailModal
+        post={selectedPost}
+        isOpen={Boolean(selectedPost)}
+        onClose={() => setSelectedPost(null)}
+        isFav={selectedPost ? isFavorite(selectedPost.id) : false}
+        onToggleFav={toggleFavorite}
+        onDelete={deletePost}
+      />
     </div>
   )
 }
