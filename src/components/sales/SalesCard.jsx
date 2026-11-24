@@ -24,7 +24,14 @@ export function SalesCard({ post, isFav, onToggleFav, onDelete, onSelect }) {
     original_url
   } = post
 
-  const hasImage = Boolean(image_url) && !imgFailed
+  const isDirectImage = (url) => {
+    if (!url || typeof url !== 'string') return false
+    // Facebook photo.php is an HTML redirect that triggers ERR_BLOCKED_BY_RESPONSE.NotSameOrigin
+    if (url.includes('photo.php') || url.includes('facebook.com/photo')) return false
+    return true
+  }
+
+  const hasImage = Boolean(image_url) && isDirectImage(image_url) && !imgFailed
   const hasPrice = price !== null && price !== undefined && !isNaN(Number(price))
 
   const conditionLabels = {
@@ -101,6 +108,7 @@ export function SalesCard({ post, isFav, onToggleFav, onDelete, onSelect }) {
             <img
               src={image_url}
               alt={product_name || 'Listing'}
+              referrerPolicy="no-referrer"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
               onError={() => setImgFailed(true)}

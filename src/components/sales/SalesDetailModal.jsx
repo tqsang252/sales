@@ -41,7 +41,13 @@ export function SalesDetailModal({ post, isOpen, onClose, isFav, onToggleFav, on
     original_url
   } = post
 
-  const hasImage = Boolean(image_url) && !imgFailed
+  const isDirectImage = (url) => {
+    if (!url || typeof url !== 'string') return false
+    if (url.includes('photo.php') || url.includes('facebook.com/photo')) return false
+    return true
+  }
+
+  const hasImage = Boolean(image_url) && isDirectImage(image_url) && !imgFailed
   const hasPrice = price !== null && price !== undefined && !isNaN(Number(price))
 
   const conditionLabels = {
@@ -136,6 +142,7 @@ export function SalesDetailModal({ post, isOpen, onClose, isFav, onToggleFav, on
                 <img
                   src={image_url}
                   alt={product_name || 'Listing'}
+                  referrerPolicy="no-referrer"
                   className="w-full h-full max-h-80 object-contain bg-slate-50"
                   onError={() => setImgFailed(true)}
                 />

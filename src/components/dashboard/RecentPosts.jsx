@@ -49,10 +49,11 @@ export function RecentPosts({ posts = [], loading = false }) {
               {/* Image & Title */}
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-11 h-11 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
-                  {post.image_url ? (
+                  {post.image_url && !post.image_url.includes('photo.php') ? (
                     <img
                       src={post.image_url}
                       alt={post.product_name || 'Product'}
+                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                       loading="lazy"
                       onError={(e) => {
