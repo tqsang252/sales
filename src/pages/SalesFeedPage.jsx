@@ -139,7 +139,7 @@ export function SalesFeedPage() {
                 <th className="py-3 px-4">Platform</th>
                 <th className="py-3 px-4">Price</th>
                 <th className="py-3 px-4">Location</th>
-                <th className="py-3 px-4">Condition</th>
+                <th className="py-3 px-4">Group</th>
                 <th className="py-3 px-4">Date</th>
                 <th className="py-3 px-2 text-center">Actions</th>
                 <th className="py-3 px-4 text-right">Original</th>

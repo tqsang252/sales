@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Bookmark, ExternalLink, MapPin, MessageSquareText, Trash2 } from 'lucide-react'
+import { Bookmark, ExternalLink, MapPin, MessageSquareText, Trash2, Users } from 'lucide-react'
 import { PlatformBadge } from '../common/PlatformBadge'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatStandardDate } from '../../utils/formatDate'
@@ -78,7 +78,6 @@ export function SalesListRow({ post, isFav, onToggleFav, onDelete, onSelect }) {
             </p>
             <p className="text-xs text-slate-400 truncate mt-0.5">
               by <span className="text-slate-700 font-medium">{author_name || 'Anonymous'}</span>
-              {group_name ? ` • in ${group_name}` : ''}
               {category_name ? ` • ${category_name}` : ''}
             </p>
           </div>
@@ -115,11 +114,12 @@ export function SalesListRow({ post, isFav, onToggleFav, onDelete, onSelect }) {
         )}
       </td>
 
-      {/* Condition */}
+      {/* Group Name instead of Condition */}
       <td className="py-3 px-4 whitespace-nowrap">
-        {condition && condition !== 'unknown' ? (
-          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
-            {conditionLabels[condition] || condition}
+        {group_name ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 max-w-[220px] truncate" title={group_name}>
+            <Users className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+            <span className="truncate">{group_name}</span>
           </span>
         ) : (
           <span className="text-slate-400 text-xs">—</span>
