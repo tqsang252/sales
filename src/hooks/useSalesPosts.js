@@ -26,6 +26,7 @@ export function useSalesPosts() {
   const [categories, setCategories] = useState([])
   const [sources, setSources] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(null)
 
   // Debounce search input (400ms)
@@ -74,9 +75,15 @@ export function useSalesPosts() {
   }, [])
 
   // Fetch sales posts
-  const fetchPosts = useCallback(async () => {
-    setLoading(true)
+  const fetchPosts = useCallback(async (targetPage = 1) => {
+    const isFirstPage = targetPage === 1
+    if (isFirstPage) {
+      setLoading(true)
+    } else {
+      setLoadingMore(true)
+    }
     setError(null)
+
     try {
       const res = await salesService.getSalesPosts({
         search: debouncedSearch,
@@ -88,7 +95,7 @@ export function useSalesPosts() {
         condition,
         source,
         sort,
-        page,
+        page: targetPage,
         pageSize,
         favoritesOnly,
         favoriteIds
@@ -98,17 +105,40 @@ export function useSalesPosts() {
         throw new Error(res.error)
       }
 
-      setPosts(res.data || [])
+      const incoming = res.data || []
+      setPosts(prev => {
+        if (isFirstPage) {
+          return incoming
+        }
+        // Deduplicate incoming posts by id
+        const existingIds = new Set(prev.map(p => p.id))
+        const uniqueIncoming = incoming.filter(p => !existingIds.has(p.id))
+        return [...prev, ...uniqueIncoming]
+      })
       setTotalCount(res.count || 0)
     } catch (err) {
       setError(err.message || 'Failed to fetch sales posts')
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
-  }, [debouncedSearch, platform, category, minPrice, maxPrice, dateRange, condition, source, sort, page, pageSize, favoritesOnly, favoriteIds])
+  }, [debouncedSearch, platform, category, minPrice, maxPrice, dateRange, condition, source, sort, pageSize, favoritesOnly, favoriteIds])
 
+  // Trigger fetch when page or filters change
   useEffect(() => {
-    fetchPosts()
+    fetchPosts(page)
+  }, [page, debouncedSearch, platform, category, minPrice, maxPrice, dateRange, condition, source, sort, favoritesOnly, favoriteIds])
+
+  // Infinite Scroll Trigger
+  const loadMore = useCallback(() => {
+    if (loading || loadingMore) return
+    if (posts.length >= totalCount && totalCount > 0) return
+    setPage(prev => prev + 1)
+  }, [loading, loadingMore, posts.length, totalCount])
+
+  const refresh = useCallback(() => {
+    setPage(1)
+    return fetchPosts(1)
   }, [fetchPosts])
 
   const clearFilters = useCallback(() => {
@@ -136,20 +166,25 @@ export function useSalesPosts() {
     if (res.error) {
       console.error('Failed to delete post:', res.error)
       // Refresh on failure
-      fetchPosts()
+      refresh()
       return false
     }
     return true
-  }, [fetchPosts])
+  }, [refresh])
+
+  const hasMore = totalCount === 0 ? false : posts.length < totalCount
 
   return {
     posts,
     totalCount,
+    hasMore,
     categories,
     sources,
     loading,
+    loadingMore,
+    loadMore,
     error,
-    refresh: fetchPosts,
+    refresh,
     deletePost,
     // Filters and Setters
     search,

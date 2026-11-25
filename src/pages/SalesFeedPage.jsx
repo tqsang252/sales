@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
+import { Loader2, ArrowUp } from 'lucide-react'
 import { PageHeader } from '../components/layout/PageHeader'
 import { SalesSearch } from '../components/sales/SalesSearch'
 import { SalesFilters } from '../components/sales/SalesFilters'
 import { ViewToggle } from '../components/sales/ViewToggle'
 import { SalesCard } from '../components/sales/SalesCard'
 import { SalesListRow } from '../components/sales/SalesListRow'
-import { SalesPagination } from '../components/sales/SalesPagination'
 import { SalesDetailModal } from '../components/sales/SalesDetailModal'
 import { LoadingGrid, LoadingTable } from '../components/common/LoadingState'
 import { EmptyState } from '../components/common/EmptyState'
@@ -16,14 +16,20 @@ import { useFavorites } from '../hooks/useFavorites'
 export function SalesFeedPage() {
   const [viewMode, setViewMode] = useState('grid') // 'grid' | 'list'
   const [selectedPost, setSelectedPost] = useState(null)
+  const [showScrollTop, setShowScrollTop] = useState(false)
+  const sentinelRef = useRef(null)
+
   const { isFavorite, toggleFavorite } = useFavorites()
 
   const {
     posts,
     totalCount,
+    hasMore,
     categories,
     sources,
     loading,
+    loadingMore,
+    loadMore,
     error,
     refresh,
     deletePost,
@@ -41,21 +47,49 @@ export function SalesFeedPage() {
     setMaxPrice,
     dateRange,
     setDateRange,
-    condition,
-    setCondition,
     sort,
     setSort,
-    page,
-    setPage,
-    pageSize,
-    setPageSize,
     favoritesOnly,
     setFavoritesOnly,
     clearFilters
   } = useSalesPosts()
 
+  // Track scroll position to show "Back to Top" button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 500)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // IntersectionObserver for Infinite Scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel || !hasMore || loading || loadingMore) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore()
+        }
+      },
+      {
+        rootMargin: '400px', // Pre-fetch 400px before user hits exact bottom
+        threshold: 0.1,
+      }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasMore, loading, loadingMore, loadMore])
+
   return (
-    <div>
+    <div className="relative">
       {/* Page Header */}
       <PageHeader
         title="Sales Feed"
@@ -100,17 +134,17 @@ export function SalesFeedPage() {
       />
 
       {/* Main Content Area */}
-      {error && !loading ? (
+      {error && !loading && posts.length === 0 ? (
         <ErrorState
           title="Could not retrieve sales listings"
           message={error}
           onRetry={refresh}
         />
-      ) : loading ? (
+      ) : loading && posts.length === 0 ? (
         viewMode === 'grid' ? <LoadingGrid count={6} /> : <LoadingTable count={6} />
       ) : posts.length === 0 ? (
         <EmptyState
-          title={search || favoritesOnly ? 'No matching posts found' : 'No sales posts available'}
+          title={search || favoritesOnly || source !== 'all' ? 'No matching posts found' : 'No sales posts available'}
           description={
             favoritesOnly
               ? "You haven't saved any favorites yet. Click the bookmark icon on any card to save it."
@@ -165,18 +199,31 @@ export function SalesFeedPage() {
         </div>
       )}
 
-      {/* Pagination */}
-      {!loading && posts.length > 0 && (
-        <SalesPagination
-          page={page}
-          pageSize={pageSize}
-          totalCount={totalCount}
-          onPageChange={setPage}
-          onPageSizeChange={(newSize) => {
-            setPageSize(newSize)
-            setPage(1)
-          }}
-        />
+      {/* Infinite Scroll Sentinel & Loading Indicator */}
+      <div ref={sentinelRef} className="py-8 flex flex-col items-center justify-center">
+        {loadingMore && (
+          <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-600 bg-white px-5 py-2.5 rounded-full shadow-md border border-slate-200 animate-pulse">
+            <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+            <span>Loading more posts ({posts.length} of {totalCount})...</span>
+          </div>
+        )}
+
+        {!hasMore && posts.length > 0 && !loading && (
+          <div className="text-center py-6 text-xs text-slate-400 border-t border-slate-200/70 w-full mt-4">
+            🎉 You've reached the end • Showing all <span className="font-semibold text-slate-700">{totalCount}</span> posts
+          </div>
+        )}
+      </div>
+
+      {/* Floating Scroll-to-Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 p-3 rounded-full bg-slate-900 text-white shadow-xl hover:bg-blue-600 transition-all duration-200 z-40 flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-blue-500"
+          title="Back to top"
+        >
+          <ArrowUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+        </button>
       )}
 
       {/* Full Detail Modal Popup */}
