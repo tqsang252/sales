@@ -77,6 +77,46 @@ CREATE POLICY "Allow public delete access on sales_posts" ON sales_posts
 CREATE POLICY "Allow public insert access on sales_posts" ON sales_posts
     FOR INSERT WITH CHECK (true);
 
+-- ==============================================================================
+-- 4.B. CREATE TABLE: slickdeals_posts (for Slickdeals RSS Crawler)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS slickdeals_posts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    guid TEXT UNIQUE, -- e.g. "thread-20398938" to prevent duplicate crawlings
+    title TEXT NOT NULL,
+    link TEXT NOT NULL,
+    description TEXT,
+    content_encoded TEXT,
+    image_url TEXT,
+    price NUMERIC(12, 2),
+    price_raw TEXT, -- e.g. "$69.99" or "FREE"
+    store TEXT, -- e.g. "Amazon", "eBay", "Target", "Walmart"
+    score INTEGER DEFAULT 0, -- Thumb score e.g. +32
+    deal_type TEXT NOT NULL DEFAULT 'frontpage' CHECK (deal_type IN ('hot', 'popular', 'frontpage')),
+    category TEXT, -- e.g. "Electronics", "Entertainment"
+    creator TEXT, -- poster username
+    published_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for Slickdeals
+CREATE INDEX IF NOT EXISTS idx_slickdeals_published_at ON slickdeals_posts(published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_slickdeals_deal_type ON slickdeals_posts(deal_type);
+CREATE INDEX IF NOT EXISTS idx_slickdeals_guid ON slickdeals_posts(guid);
+
+-- RLS for Slickdeals
+ALTER TABLE slickdeals_posts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access on slickdeals_posts" ON slickdeals_posts
+    FOR SELECT USING (true);
+
+CREATE POLICY "Allow public delete access on slickdeals_posts" ON slickdeals_posts
+    FOR DELETE USING (true);
+
+CREATE POLICY "Allow public insert access on slickdeals_posts" ON slickdeals_posts
+    FOR INSERT WITH CHECK (true);
+
 -- 7. SEED DATA (Demo Sources, Categories, and Posts)
 DO $$
 DECLARE

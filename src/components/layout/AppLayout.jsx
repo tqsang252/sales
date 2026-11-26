@@ -8,6 +8,7 @@ export function AppLayout() {
   const location = useLocation()
 
   const getPageTitle = () => {
+    if (location.pathname === '/slickdeals') return 'Slickdeals US Radar'
     if (location.pathname === '/dashboard') return 'Dashboard'
     return 'Sales Feed'
   }

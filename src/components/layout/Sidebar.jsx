@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Radio, Radar, Bookmark, Database } from 'lucide-react'
+import { LayoutDashboard, Radio, Radar, Bookmark, Database, Flame } from 'lucide-react'
 import { isSupabaseConfigured } from '../../services/supabaseClient'
 
 export function Sidebar({ mobileOpen, onCloseMobile }) {
@@ -10,6 +10,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }) {
     // Dashboard temporarily hidden, ready to be enabled later
     // { name: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
     { name: 'Sales Feed', to: '/', icon: Radio },
+    { name: 'Slickdeals', to: '/slickdeals', icon: Flame },
   ]
 
   return (
